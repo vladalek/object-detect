@@ -1,0 +1,398 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/platinum-push-messaging/platinum-push-messaging.html">
+
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/iron-meta/iron-meta.html">
+
+
+<link rel="import" href="my-icons.html">
+<!-- <link rel="import" href="my-ga.html"> -->
+
+<dom-module id="mobile-app">
+  <template>
+    <style>
+       :host {
+        --app-primary-color: #009FDB;
+        --app-secondary-color: black;
+
+        display: block;
+      }
+
+       :host([page=experience]) .back_btn {
+        display: none;
+      }
+
+       :host(:not([page=experience])) .menu_btn {
+        display: none;
+      }
+
+      .header_title {
+        font-family: attAlecFontBld;
+      }
+
+      app-header {
+        color: #fff;
+        background-color: var(--app-primary-color);
+      }
+
+      app-header paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      .drawer-list {
+        margin: 0 20px;
+      }
+
+      .drawer-list a {
+        display: block;
+        padding: 0 16px;
+        text-decoration: none;
+        color: var(--app-secondary-color);
+        line-height: 40px;
+      }
+
+      .account a {
+        text-decoration: none;
+        color: white;
+      }
+
+      .drawer-list a.iron-selected {
+        color: black;
+        font-weight: bold;
+      }
+    </style>
+
+    <!-- Set global app config -->
+    <iron-meta key="appConfig" value="[[appConfig]]"></iron-meta>
+
+    <!-- Firebase setup elements
+        App name: comm
+    -->
+    <firebase-app id="app" name="comm"
+                  auth-domain="got-microsite.firebaseapp.com"
+                  database-url="https://got-microsite.firebaseio.com"
+                  api-key="AIzaSyAbqMf5vbEec3aQ3t9h7bndBEodAPq-fww"
+                  messaging-sender-id="276681652131">
+    </firebase-app>
+   <!--  <firebase-app
+      auth-domain="{{appConfig.firebase.authDomain}}"
+      database-url="{{appConfig.firebase.databaseUrl}}"
+      api-key="{{appConfig.firebase.apiKey}}"
+      messaging-sender-id= "{{appConfig.senderId}}"
+      name="comm">
+    </firebase-app> -->
+
+    <firebase-auth
+      id="firebaseAuth"
+      app-name="comm"
+      provider="password"
+      signed-in="{{signedIn}}"
+      user="{{_user}}"
+      on-signed-in-changed="signedInChanged">
+    </firebase-auth>
+    <firebase-messaging id="messaging" token="{{token}}" on-message="handleMessage" app-name="comm"></firebase-messaging>
+    <firebase-document path="[[user.uid]]/userInfo/token" data="[[token]]" app-name="comm">
+    </firebase-document>
+    <firebase-document
+      id="firebaseDoc"
+      app-name="comm" >
+    </firebase-document>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+    <my-ga key="UA-97063097-2"></my-ga>
+
+    <app-drawer-layout fullbleed force-narrow="true">
+      <!-- Drawer content -->
+      <app-drawer id="drawer">
+        <app-toolbar>Menu</app-toolbar>
+
+        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+          <a name="experience" href="/experience">Experience</a>
+          <a name="user" href="/user">User Settings</a>
+        </iron-selector>
+      </app-drawer>
+
+      <!-- Main content -->
+      <app-header-layout has-scrolling-region>
+
+        <app-header condenses reveals effects="waterfall">
+          <app-toolbar>
+            <paper-icon-button class="menu_btn" icon="my-icons:menu" drawer-toggle></paper-icon-button>
+            <a href="/experience">
+              <paper-icon-button class="back_btn" icon="my-icons:arrow-back"></paper-icon-button>
+            </a>
+
+            <div class="header_title" main-title>AT&T Fan Experience</div>
+            <div class="account">
+              <template is="dom-if" if="[[!signedIn]]">
+                <a href="/user">Sign Up</a>
+              </template>
+            </div>
+          </app-toolbar>
+        </app-header>
+
+        <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
+          <my-experience id="experience" name="experience"></my-experience>
+          <my-user name="user" on-logout="logout" user="[[_user]]" signed-in="[[signedIn]]" on-user-created="onUserCreated"></my-user>
+          <my-character name="character" requested-character="{{requestedCharacter}}"></my-character>
+          <my-view404 name="view404"></my-view404>
+        </iron-pages>
+      </app-header-layout>
+    </app-drawer-layout>
+  </template>
+
+  <script>
+
+    Polymer({
+      is: 'mobile-app',
+
+      properties: {
+        page: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged',
+        },
+
+        firebaseSetup: {
+          type: Object,
+          value: {
+            user: "admin@conexustech.com",
+            pass: "Asdf2468",
+            uid: "OuIQFI77O3Y8u9x1mhcOdh3m8Ez1",
+            location: "https://got-microsite.firebaseio.com"
+          }
+        },
+
+        fbSignIn: {
+          type: Boolean,
+          notify: true,
+          observer: '_signInFirebase'
+        },
+
+        appConfig: {
+          type: Object,
+          value: function () {
+            return {
+              firebase: {
+                authDomain: 'got-microsite.firebaseapp.com',
+                databaseUrl: 'https://got-microsite.firebaseio.com',
+                apiKey: 'AIzaSyAbqMf5vbEec3aQ3t9h7bndBEodAPq-fww',
+                senderId: '276681652131'
+              }
+            };
+          }
+        },
+
+        /**
+          * True if the user is authenticated, and false if the user is not
+          * authenticated.
+          * Use can be any Anonymous user or System User(Via Email & Password authentication).
+          */
+        _signedIn: {
+          type: Boolean
+        },
+
+        /**
+          * This property constructed from the other fields of this element.
+          * Used to detect signed-in user is not an anonymous user.
+          */
+
+        signedIn: {
+          type: Boolean,
+          value: false
+          //computed: 'computeSignedIn(_signedIn, _user.isAnonymous, _isSignup)'
+        },
+
+        _user: {
+          type: Object,
+          value: function () {
+            return {};
+          }
+        },
+
+        _statusKnown: {
+          type: Boolean
+        },
+
+        /**
+          * True if the user is newly created.
+          * Used to compute signedIn property of this element.
+          */
+        _isSignup: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
+
+        requestedCharacter: {
+          type: Number,
+          notify: true,
+          value:10
+        }
+      },
+
+      observers: [
+        '_routePageChanged(routeData.page)',
+        '_subrouteIdChanged(subroute)',
+        'autoAuth(_user, _statusKnown)'
+      ],
+
+      ready: function () {
+        var self = this;
+        
+        // Prevent Anonymous user logout if user reloads the page with different criterias.
+        window.onmouseover = function () {
+          window.onbeforeunload = null;
+        };
+        window.onmouseout = function () {
+          window.onbeforeunload = ConfirmLeave;
+        };
+        var prevKey = "";
+        document.onkeydown = function (e) {
+          if (e.key == "F5") {
+            window.onbeforeunload = null;
+          } else if (e.key.toUpperCase() == "W" && prevKey == "CONTROL") {
+            window.onbeforeunload = ConfirmLeave;
+          } else if (e.key.toUpperCase() == "R" && prevKey == "CONTROL") {
+            window.onbeforeunload = null;
+          } else if (e.key.toUpperCase() == "F4" && (prevKey == "ALT" || prevKey == "CONTROL")) {
+            window.onbeforeunload = ConfirmLeave;
+          }
+          prevKey = e.key.toUpperCase();
+        };
+
+        function ConfirmLeave() {
+          if (self.signedIn) return;
+          self.logout();
+        }
+      },
+
+      /**
+        * Automatically authenticates a Firebase client using a new, temporary guest account 
+        * if no user authenticated
+        */
+      autoAuth: function (user, statusKnown) {
+        var self = this;
+        console.log('user ', user);
+        console.log('statusKnown ', statusKnown)
+        if (statusKnown && (user === null || Object.keys(user).length === 0)) {
+          self.$.firebaseAuth.signInAnonymously()
+            .then(function (user) {
+              console.log('loggedin as anonynmous...');
+              var _formData = {
+                'currentCustomer': false, // Hard coded change as per your need
+                'email': "",
+                'firstName': "",
+                'lastName': "",
+                'notificationEnabled': false // Hard coded change as per your need
+              };
+              localStorage.setItem('visit', 1);
+              self.$.firebaseDoc.setStoredValue(user.uid + '/userInfo', _formData);
+              self.$.firebaseDoc.setStoredValue(user.uid + '/usageData/web/visit1/start', { ".sv": "timestamp" });
+            });
+        }
+      },
+
+      // _toExperience: function ( ) {
+      //   this.set('page', 'experience');
+      //   this.set('menuButton', true);
+      // },
+
+      // _requestedCharacterChanged: function ( t) {
+      //   this.set('page', 'character');
+      //   this.set('menuButton', false);
+      // },
+
+      _subrouteIdChanged: function (subroute) {
+        var id = subroute.path.substr(-1);
+        if (id.length > 0) this.set('routeDataLast', id);
+        else this.set('routeDataLast', 0);
+      },
+
+      _routePageChanged: function (page) {
+        this.page = page || 'experience';
+
+        if (!this.$.drawer.persistent) {
+          this.$.drawer.close();
+        }
+      },
+
+      signedInChanged: function (e) {
+        console.log(e.detail.value);
+        console.log('signedInChanged');
+        if (e.detail.value) {
+          this.$.experience.click();
+        }
+      },
+
+      _pageChanged: function (page) {
+        // Load page import on demand. Show 404 page if fails
+        var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+        this.importHref(resolvedPageUrl, null, this._showPage404, true);
+        this.set("routeData.page", page);
+      },
+
+      _showPage404: function () {
+        this.page = 'view404';
+      },
+
+      /**
+        * Computes value of signedIn property of this element based on status of current signedin user
+        */
+      computeSignedIn: function (_signedIn, isAnonymous, _signedUp) {
+        console.log('computeSignedIn called...');
+
+        if (_signedIn && isAnonymous) {
+          return false;
+        } else {
+          return _signedIn;
+        }
+      },
+
+      /**
+        * Updates _isSignup property value if new user is created.
+        */
+      onUserCreated: function () {
+        this.set('_isSignup', true);
+      },
+
+      /**
+        * Logout the user
+        * Add visit end time in Firebase DB
+        * remove visit count from localstorage
+        */
+      logout: function () {
+        var self = this;
+        this.$.firebaseAuth.signOut();
+        var visit = localStorage.getItem('visit');
+        if (visit !== null) {
+          self.$.firebaseDoc.setStoredValue(self._user.uid + '/usageData/web/visit' + visit + '/end', { ".sv": "timestamp" });
+          localStorage.removeItem('visit');
+        }
+      }
+    });
+  </script>
+</dom-module>

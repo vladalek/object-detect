@@ -1,0 +1,59 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="show-content-data">
+  <script>
+  (function() {
+    var trailers = [
+      {
+        videoUrl: "https://s3.amazonaws.com/got-microsite-assets/images/video/HBO_GAME_OF_THRONES_S7_TRAILER_1.mp4"
+      },
+      {
+        videoUrl: "https://s3.amazonaws.com/got-microsite-assets/images/video/HBO_GAME_OF_THRONES_S7_TRAILER_2.mp4"
+      }
+    ];
+
+    var behindTheScenes = [
+      {
+        videoUrl: "https://s3.amazonaws.com/got-microsite-assets/images/video/HBO_GAME_OF_THRONES_S7_TRAILER_1.mp4"
+      },
+      {
+        videoUrl: "https://s3.amazonaws.com/got-microsite-assets/images/video/HBO_GAME_OF_THRONES_S7_TRAILER_2.mp4"
+      },
+      {
+        videoUrl: "https://s3.amazonaws.com/got-microsite-assets/images/video/HBO_GAME_OF_THRONES_S7_TRAILER_1.mp4"
+      },
+      {
+        videoUrl: "https://s3.amazonaws.com/got-microsite-assets/images/video/HBO_GAME_OF_THRONES_S7_TRAILER_2.mp4"
+      }
+    ];
+
+    Polymer({
+      is: 'show-content-data',
+
+      properties: {
+        trailerList: {
+          type: Array,
+          notify: true,
+          value: trailers
+        },
+
+        behindTheScenesList: {
+          type: Array,
+          notify: true,
+          value: behindTheScenes
+        }
+      }
+    });
+  })();
+  </script>
+</dom-module>

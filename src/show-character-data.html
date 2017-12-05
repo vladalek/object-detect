@@ -1,0 +1,208 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="show-character-data">
+  <script>
+  (function() {
+    var filePath = "https://s3.amazonaws.com/got-microsite-assets/"
+    var characters = [
+      {
+        name: "Tyrion Lannister",
+        actorName: "Peter Dinklage",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/tyrion-lannister-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/tyrion-lannister-1024.jpg",
+        header: "The youngest son of Lord Tywin Lannister.",
+        bio: "What Tyrion lacks in size and strength, he makes up for in mental acuity. Formerly Hand of the King and Master of Coin on the Small Council, Tyrion now supports Daenerys Targaryen's claim to the Iron Throne.",
+      },
+      {
+        name: "Cersei Lannister",
+        actorName: "Lena Headey",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/cersei-lannister-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/cersei-lannister-1024.jpg",
+        header: "Queen Regent of the Seven Kingdoms.",
+        bio: "Queen of the Seven Kingdoms, Cersei was involved in a relationship with her twin brother, Jaime even before her marriage to Robert Baratheon. More than anything, Cersei is interested in maintaining her position of power.",
+      },
+      {
+        name: "Daenerys Targaryen",
+        actorName: "Emilia Clarke",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/daenerys-targaryen-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/daenerys-targaryen-1024.jpg",
+        header: "Princess of House Targaryen.",
+        bio: "Princess of House Targaryen, Daenerys lived in exile in Essos with her advisors and dragons. Looking towards her future goal to take back the Iron Throne, Dany rallied the Unsullied of Astapor, freed the people of Slaver's Bay, creating alliances and an army along the way.",
+      },
+      {
+        name: "Jaime Lannister",
+        actorName: "Nikolaj Coster-Waldau",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/jaime-lannister-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/jaime-lannister-1024.jpg",
+        header: "Cersei's twin brother.",
+        bio: "Cersei's twin brother and the Lord Commander of the Kingsguard, it was he who slew the Mad King in violation of his oath to protect the royal family. After Jaime was captured by Catelyn Stark, Brienne of Tarth escorted him back to King's Landing. Jaime lost his sword hand to Roose Bolton's henchman, Locke, along the way.",
+      },
+      {
+        name: "Petyr Baelish/Littlefinger",
+        actorName: "Aidan Gillen",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/peytr-baelish-littlefinger-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/peytr-baelish-littlefinger-1024.jpg",
+        header: "Beyond his official duties, he is the eyes and ears of King's Landing.",
+        bio: "Nakedly ambitious, Littlefinger left the Small Council to marry Lysa Arryn and secure the Vale. Now in service to Sansa Stark at Winterfell, Littlefinger's endgame is unknown to everyone but himself.",
+      },
+      {
+        name: "Jon Snow",
+        actorName: "Kit Harington",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/jon-snow-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/jon-snow-1024.jpg",
+        header: "Ned Stark's bastard son.",
+        bio: "A bastard of Winterfell, Jon joined the Night's Watch, eventually achieving the title of Lord Commander. After running into conflict with other members of the Watch, Jon reunited with Sansa and rallied the North to take back Winterfell from the Boltons.",
+      },
+      {
+        name: "Olenna Tyrell",
+        actorName: "Diana Rigg",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/olenna-tyrell-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/olenna-tyrell-512x512-1024.jpg",
+        header: "Matriarch of House Tyrell.",
+        bio: "Matriarch of House Tyrell, Lady Olenna is not shy about sharing her opinions.",
+      },
+      {
+        name: "Sansa Stark",
+        actorName: "Sophie Turner",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/sansa-stark-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/sansa-stark-1024.jpg",
+        header: "The oldest Stark daughter.",
+        bio: "The oldest Stark daughter, Sansa realized King's Landing wasn't the fairy tale she assumed it would be. She returned to the North, where she has reunited with her brother Jon Snow.",
+      },
+      {
+        name: "Arya Stark",
+        actorName: "Maisie Williams",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/arya-stark-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/arya-stark-1024.jpg",
+        header: "The younger of the Stark daughters.",
+        bio: "The younger of the Stark daughters, Arya put her survival skills to use and made her way east to the city of Braavos. After extensive training with the Faceless Men, Arya decided to return to Westeros.",
+      },
+      {
+        name: "Theon Greyjoy",
+        actorName: "Alfie Allen",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/theon-greyjoy-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/theon-greyjoy-1024.jpg",
+        header: "Theon betrayed the family that raised him.",
+        bio: "A former ward of House Stark, Theon was quick to join his close friend Robb in his rebellion against King Joffrey. But upon returning to Pyke as Robb's envoy, Theon betrayed the family that raised him. After seizing Winterfell, he was taken prisoner by Ramsay Snow, who tortured him into renouncing his true identity. Theon reunited with his sister, Yara, and supports her claim to the Salt Throne.",
+      },
+      {
+        name: "Samwell Tarly",
+        actorName: "John Bradley",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/samwell-tarly-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/samwell-tarly-1024.jpg",
+        header: "Sam was forced to join the Night's Watch...",
+        bio: "Sam was forced to join the Night's Watch by his father as a means to disinherit him. He fell in love with Craster's daughter Gilly, and fled with her and her newborn son into the wilderness after a band of Night's Watch brothers rebelled at Craster's Keep. Sam, hoping to eventually become a maester, spends much of his time reading.",
+      },
+      {
+        name: "Brienne of Tarth",
+        actorName: "Gwendoline Christie",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/brienne-of-tarth-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/brienne-of-tarth-1024.jpg",
+        header: "A highborn lady who would rather be a knight.",
+        bio: "Brienne is a highborn lady who would rather be a knight. As Catelyn Stark's envoy, she escorted Jaime Lannister back to Kings Landing. The two fighters developed a mutual respect for each other during their journey.",
+      },
+      {
+        name: "Davos Seaworth",
+        actorName: "Liam Cunningham",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/davos-seaworth-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/davos-seaworth-1024.jpg",
+        header: "A reformed smuggler.",
+        bio: "A reformed smuggler, it was Davos who provided Stannis' forces much-needed provisions during the long siege of Storm's End. Davos is a served Stannis honorably until his end, and has since sworn loyalty to Jon Snow.",
+      },
+      {
+        name: "Bronn",
+        actorName: "Jerome Flynn",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/bronn-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/bronn-1024.jpg",
+        header: "This mercenary joined up with Tyrion Lannister.",
+        bio: "A mercenary, Bronn joined up with Tyrion Lannister in return for a rich reward. Bronn was knighted for his bravery during the Battle of the Blackwater. He now aids Jaime Lannister -- for the right price.",
+      },
+      {
+        name: "Bran Stark",
+        actorName: "Isaac Hempstead Wright",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/bran-stark-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/bran-stark-1024.jpg",
+        header: "Bran is traveling north with his bannermen Jojen and Meera Reed.",
+        bio: "Crippled after Jaime Lannister pushed him from a tower, Bran sought answers about his visions and discovered the Three-Eyed Raven.",
+      },
+      {
+        name: "Jorah Mormont",
+        actorName: "Iain Glen",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/jorah-mormont-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/jorah-mormont-1024.jpg",
+        header: "An exiled knight in Essos.",
+        bio: "The son of Lord Commander Jeor Mormont, Jorah was exiled to Essos, where he became advisor to Daenerys Targaryen. Although Jorah originally joined Dany's company to spy on her, he has since become devoted to her and her cause.",
+      },
+      {
+        name: "Varys",
+        actorName: "Conleth Hill",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/maetser-varys-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/maetser-varys-1024.jpg",
+        header: "A eunuch and a member of the Small Council.",
+        bio: "A eunuch and former member of the Small Council, Varys is also a master of disguise. He is always aware of what goes on in Court.",
+      },
+      {
+        name: "Missandei",
+        actorName: "Nathalie Emmanuel",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/missandei-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/missandei-1024.jpg",
+        header: "Formerly a slave in Astapor.",
+        bio: "Formerly a slave in Astapor, Missandei is fluent in several languages, including the Common Tongue and High Valyrian.",
+      },
+      {
+        name: "Melisandre",
+        actorName: "Carice van Houten",
+        listImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/melisandre-512x512.jpg",
+        largeImg: "https://s3.amazonaws.com/got-microsite-assets/images/characters/melisandre-1024.jpg",
+        header: "A Red priestess from Asshai.",
+        bio: "A Red priestess from Asshai, Melisandre worships the Lord of Light. She believes her visions will lead her to the true king of Westeros.",
+      }
+    ];
+
+    Polymer({
+      is: 'show-character-data',
+
+      properties: {
+        requestedCharacter: {
+          type: Object,
+          notify: true,
+          value: {name: "Sansa Stark"}
+        },
+
+        selectCharacter: {
+          type: Number,
+          notify: true,
+          value: 0,
+          observer: '_selectedCharacterChanged'
+        },
+
+        characterList: {
+          type: Array,
+          notify: true,
+          value: characters
+        }
+      },
+
+      _selectedCharacterChanged: function (c) {
+        console.log("Character - SELECTED CHANGED");
+        this.set('requestedCharacter', characters[c]);
+        console.log(this.requestedCharacter);
+      },
+
+      ready: function() {
+        // this.set('characterList' , characters);
+      }
+    });
+  })();
+  </script>
+</dom-module>

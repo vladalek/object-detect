@@ -1,0 +1,174 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../bower_components/paper-password-input/paper-password-input.html">
+<link rel="import" href="../bower_components/paper-password-input/min-length-validator.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-login">
+  <template>
+    <style include="iron-flex iron-flex-alignment iron-positioning shared-styles">
+       :host {
+        display: block;
+        padding: 10px 0;
+      }
+
+      h1 {
+        margin-top: 4px;
+        margin-bottom: 12px;
+      }
+
+      .wrapper-btns {
+        margin-top: 15px;
+      }
+
+      .loader-wapper {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .wrapper-btns .form-btn {
+        padding: 20px 80px;
+        margin: 0 auto;
+      }
+
+      paper-button {
+        background: #EA7400;
+        color: #FFFFFF;
+      }
+    </style>
+
+    <!-- Get global app config -->
+    <iron-meta-query 
+      key="appConfig" 
+      value="{{appConfig}}">
+    </iron-meta-query>
+
+    <!-- Firebase setup elements
+        App name: comm
+    -->
+
+    <firebase-auth id="firebaseAuth" app-name="comm" provider="password" signed-in="{{signedIn}}" user="{{_user}}">
+    </firebase-auth>
+    <firebase-document app-name="comm" id="firebaseDoc">
+    </firebase-document>
+
+    <div>
+      <h1>Login</h1>
+
+      <template is="dom-if" if="[[_errorMessage]]">
+        <p class="alert-error"><strong>Error:</strong> [[_errorMessage]]</p>
+      </template>
+
+      <form is="iron-form" id="form">
+        <paper-input pattern='^[a-z0-9_\-\.]{2,}@[a-z0-9_\-\.]{2,}\.[a-z]{2,}$' label="Email*" auto-validate error-message="invalid email"
+          required value="{{formData.email}}"></paper-input>
+        <min-length-validator id="min-length-validator" min-length="6"></min-length-validator>
+        <paper-password-input required label="Password*" auto-validate validator="min-length-validator" error-message="Password should be at least 6 characters"
+          value="{{formData.password}}"></paper-password-input>
+        <div class="wrapper-btns layout horizontal center">
+          <paper-button raised class="primary form-btn" type="submit" on-tap="doLogin" disabled="[[loading]]">Login</paper-button>
+        </div>
+      </form>
+
+      <div class="fit layout horizontal center-center loader-wapper" hidden$="[[!loading]]">
+        <paper-spinner-lite active></paper-spinner-lite>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    (function () {
+      Polymer({
+        is: 'my-login',
+
+        properties: {
+          formData: {
+            type: Object,
+            value: function () {
+              return {};
+            },
+            notify: true
+          },
+
+          loading: {
+            type: Boolean,
+            value: false
+          },
+
+          _errorMessage: {
+            type: String,
+            value: ""
+          },
+          user: {
+            type: Object,
+            value: function () {
+              return {};
+            }
+          },
+
+          error: String
+        },
+
+        /**
+          * Login if form valid
+          * If success in login > set new visit with start time and reset the form
+          * IF error in login > show error message
+        */
+        doLogin: function () {
+          var self = this;
+          self.set('_errorMessage', '');
+          var _user = self.user;
+          if (self.$.form.validate()) {
+            self.set('loading', true);
+            self.$.firebaseAuth.signInWithEmailAndPassword(self.formData.email, self.formData.password)
+              .then(function (user) {
+                if (user.uid !== null) {
+                  // set end time for Anonymous user sign-out before login
+                  if (_user !== null) {
+                    self.$.firebaseDoc.setStoredValue(_user.uid + '/usageData/web/visit1/end', { ".sv": "timestamp" });
+                  }
+
+                  // for login user
+                  self.$.firebaseDoc.getStoredValue(user.uid + '/usageData/web')
+                    .then(function (response) {
+                      var arrVisit = Array();
+                      for (var i in response) {
+                        arrVisit.push(parseInt(i.substr(5))); // remove first 5 char 'visit' and get actual series
+                      }
+                      var maxVisitNo = arrVisit.length == 0 ? 1 : Math.max.apply(Math, arrVisit) + 1;
+                      localStorage.setItem('visit', maxVisitNo);
+                      window.localStorage.setItem('signedIn', true);
+                      self.$.firebaseDoc.setStoredValue(user.uid + '/usageData/web/visit' + maxVisitNo + '/start', { ".sv": "timestamp" });
+                      self.set('loading', false);
+                      self.$.form.reset();
+                    }).catch(function (error) {
+                      console.error(error);
+                      self.set('loading', false);
+                    });
+                    ga('set', 'userId', user.email);
+                }
+              }).catch(function (error) {
+                // Handle Errors here.
+                self.set('loading', false);
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                console.log(errorCode);
+
+                if (errorCode === 'auth/user-not-found') {
+                  errorMessage = 'There is no user record found. The user may have been deleted.'
+                }
+                self.set('_errorMessage', errorMessage);
+              });
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

@@ -1,0 +1,144 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="shared-styles.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/vaadin-upload/vaadin-upload.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="./custom-grid.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+
+<dom-module id="message-admin">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+      #full-height-container {
+        height: 76px;
+        border: 2px solid #444;
+        background: #444;
+        padding: 2px;
+      }
+
+      #full-height-container iron-image{
+        background: #ddd;
+        cursor: pointer;
+        margin-right: 2px;
+      }
+
+      .full-height {
+        height: 100%;
+        --iron-image-height: 100%;
+      }
+      .full-height:hover {
+        border: 1px solid blue;
+      }
+    </style>
+
+    <firebase-auth id="auth" user="{{user}}" provider="email" on-error="_handleError" app-name="comm"></firebase-auth>
+    <firebase-document path="/users/[[user.uid]]/token" data="[[token]]" app-name="comm"></firebase-document>
+    <iron-localstorage id="localstorage" name="push-users" value="[[pushUsers]]" autoSaveDisabled="true"></iron-localstorage>
+
+    <div class="card">
+      <h2>Send Messages</h2>
+      <p>Select Users to Send Messages to ...</p>
+        <custom-grid id="grid" value="{{selections}}"></custom-grid>
+
+        <p>Message Heading</p>
+        <paper-input label="Message Heading" value="{{formData.header}}"></paper-input>
+
+        <p>Message Body</p>
+        <paper-textarea label="Compose Message Here" value="{{formData.body}}" max="30"></paper-textarea>
+
+        <p>Message Icon</p>
+        <div id="full-height-container">
+          <iron-image class="full-height" on-tap="selectImage" src="/images/manifest/icon-72x72.png"></iron-image>
+          <iron-image class="full-height" on-tap="selectImage" src="/images/manifest/icon-72x72.png"></iron-image>
+          <iron-image class="full-height" on-tap="selectImage" src="/images/manifest/icon-72x72.png"></iron-image>
+          <iron-image class="full-height" on-tap="selectImage" src="/images/manifest/icon-72x72.png"></iron-image>
+          <iron-image class="full-height" on-tap="selectImage" src="/images/manifest/icon-72x72.png"></iron-image>
+          <iron-image class="full-height" on-tap="selectImage" src="/images/manifest/icon-72x72.png"></iron-image>
+        </div>
+        <!-- https://www.webcomponents.org/element/vaadin/vaadin-upload -->
+        <vaadin-upload target="/upload" accept="./pdf">
+          <div class="drop-label">
+            <iron-icon icon="description"></iron-icon>
+            Drop the image you would like to appear in your notfication here.
+          </div>
+        </vaadin-upload>
+
+        <paper-button raised on-tap="postMessage" >Send Message</paper-button>
+    </div>
+  </template>
+
+  <script>
+    HTMLImports.whenReady(function () {
+
+      Polymer({
+        is: 'message-admin',
+
+        properties:{
+          formData: {
+            type: Object,
+            value: {}
+          },
+          pushUsers: {
+            type: Object
+          }
+        },
+        postMessage: function () {
+          var allowedUsers = JSON.parse(sessionStorage.getItem("allowedUsers"));
+          var tokens = [];
+          for (var i = 0; i < allowedUsers.length; i++) {
+            allowedUser = allowedUsers[i];
+            tokens.push(allowedUser.token);
+          }
+
+          fetch('/send_messages', {
+            method: 'post',
+            headers: {
+              'Content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              title: this.formData.header, 
+              body: this.formData.body, 
+              icon: this.formData.iconSrc,
+              click_action: this.formData.filename,
+              tokens: tokens
+            })
+          }).then((res) => {
+            console.log('res : ', res);
+          });
+        },
+        selectImage: function (e) {
+          console.log(this.querySelector('iron-image.full-height'));
+          this.formData.iconSrc = e.target.$.img.src
+          e.target.$.img.style.border = "1px solid red";
+        },
+        ready: function () {
+          this.addEventListener('upload-success', function (res) {
+            this.formData.filename = res.detail.file.name;
+          });
+        },
+        _handleError: function (e) {
+          console.log(e);
+        }
+      });
+    });
+  </script>
+</dom-module>

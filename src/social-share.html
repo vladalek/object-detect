@@ -1,0 +1,243 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="shared-styles.html">
+
+<!--
+We must create an application in: https://developers.facebook.com/apps/
+And get the code below., 1491812327507445
+-->
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '337432370028624',
+      xfbml      : true,
+      version    : 'v2.9'
+    });
+    FB.AppEvents.logPageView();
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+<!-- Up to this point.! -->
+
+<!-- Twitter Script -->
+<script>
+  window.twttr = (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0],
+      t = window.twttr || {};
+    if (d.getElementById(id)) return t;
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "https://platform.twitter.com/widgets.js";
+    fjs.parentNode.insertBefore(js, fjs);
+
+    t._e = [];
+    t.ready = function(f) {
+      t._e.push(f);
+    };
+
+    return t;
+  }(document, "script", "twitter-wjs"));
+</script>
+<!-- Twitter Script -->
+
+<dom-module id="social-share">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+
+      .box-btn-share {
+        /* - - - This width is for 3 buttons */
+        /*width: 130px;*/
+        /* - - - This width is for 2 buttons */
+        width: 85px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .box-btn-share p{
+        margin: 0px;
+        color: #000000;
+      }
+    </style>
+
+    <div class="box-btn-share">
+      <!--sets targetNetwork = "instagram" calls shareToSocial-->
+      <!--paper-icon-button src="../images/icons/instagram.svg" on-click="_shareInstagram"></paper-icon-button-->
+      <!--sets targetNetwork = "facebook" calls shareToSocial-->
+      <p>Share</p>
+      <paper-icon-button src="../images/icons/facebook.svg" on-click="_shareFacebook"></paper-icon-button>
+      <!--sets targetNetwork = "Twitter" calls shareToSocial-->
+      <paper-icon-button src="../images/icons/twitter.svg" on-click="_shareTwitter"></paper-icon-button>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'social-share',
+
+      properties: {
+        targetSocialNetwork: {
+          type: String,
+          notify: true
+        },
+
+        mediaUrl: {
+          type: String,
+          notify: true
+        },
+
+        hashTags: {
+          type: Array,
+          notify: true
+        },
+
+        taggedAccounts: {
+          type: String,
+          notify: true,
+          value: function() {
+            return "@Conexustech+@Conexustech";
+          }
+        }/*,
+
+        shareToSocial: {
+          type: Object,
+          notify: true,
+          value: _shareToSocial()
+        }*/
+      },
+
+      _shareToSocial: function () {
+        //get postData and post to network listed in this.postData.targetSocialNetwork
+
+        //we want to open the social app (Twitter, FB, Instagram) if on mobile and if app is installed
+        // and pre-populate the media, hashTag's and taggedAccounts
+        //My research said it is done with a POST with parameters. I found lot's of info on how to do it on Google
+
+        //if it is not mobile or app not install open a brower to social site and setup the post
+      },
+
+      _shareInstagram: function () {
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+          console.log('Instagram Mobile');
+        } else {
+          console.log('Instagram Desktop');
+        }
+      },
+
+      _shareFacebook: function () {
+        /* Commented for not to use.
+          // - - - Direct way to publish a Post - - -
+          // + + Verify user status
+          FB.getLoginStatus(function(response) {
+            if (response.status === 'connected') {
+              // the user is logged in and has authenticated your
+              // app, and response.authResponse supplies
+              // the user's ID, a valid access token, a signed
+              // request, and the time the access token
+              // and signed request each expire
+              var uid = response.authResponse.userID;
+              var accessToken = response.authResponse.accessToken;
+
+              console.log('User connected.');
+            } else if (response.status === 'not_authorized') {
+              // the user is logged in to Facebook,
+              // but has not authenticated your app
+              console.log('User not authorized.');
+            } else {
+              // the user isn't logged in to Facebook.
+              console.log('User not logged.');
+            }
+          });
+
+          // + + Create a post directly
+          // + + User can not edit content
+          FB.login(function(){
+            // Note: The call will only work if you accept the permission request
+            //FB.api('/me/feed', 'post', {message: 'Test 1 Hello, world!'});
+
+            FB.api('/me', 'get', {}, function(response) {
+              user_name = response.name;
+              message_text = '#TestingGotMicroSite #Key';
+
+              FB.api('/me/feed', 'post', {
+                name: 'Share from GOT Micro Site',
+                link: ' https://www.youtube.com/embed/i2_6L7u578Q',
+                // or
+                // link: 'https://www.mycinemovies.com/wp-content/uploads/2017/03/rich_potc5_header_1_c96068b3.jpeg',
+                message: message_text
+              });
+            });
+          }, {scope: 'public_profile,publish_actions'});
+          // - - - Direct way to publish a Post - - -
+        */
+
+        // - - - Create a post where the user can edit the content
+        var randHashTag = this.hashTags[Math.floor(Math.random() * this.hashTags.length)];
+        var data = {
+          method: 'share',
+          href: this.mediaUrl,
+          //hashtag: this.hashTags,
+          hashtag: randHashTag,
+          quote: 'You are sharing from GOT Micro Site.'
+        }
+
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+          console.log('Facebook Mobile');
+          //data["mobile_iframe"] = true;
+          this._createFbPost(data);
+        } else {
+          console.log('Facebook Desktop');
+          this._createFbPost(data);
+        }
+      },
+
+      _createFbPost: function (parameters) {
+        // - - - Create a post where the user can edit the content
+        FB.ui(parameters, function(response) {
+          console.log(response);
+          console.log(response.error_message);
+          if (response && !response.error_message) {
+            console.log('Posting completed.');
+          } else {
+            console.log('Error while posting.');
+          }
+        });
+      },
+
+      _shareTwitter: function () {
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+          console.log('Twitter Mobile');
+        } else {
+          console.log('Twitter Desktop');
+        }
+
+        shareUrl = 'https://twitter.com/share?' +
+                   'text=' + this.taggedAccounts +
+                   '&url=' + this.mediaUrl +
+                   '&hashtags=' + this.hashTags.toString().replace(/#/g, '');
+
+        window.open(shareUrl, '_blank');
+      }
+    });
+  </script>
+</dom-module>

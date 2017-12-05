@@ -1,0 +1,103 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<script src="main.js"></script>
+<link rel="manifest" href="../manifest.json">
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="shared-styles.html">
+
+
+<dom-module id="my-subscription">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+    </style>
+
+    <firebase-auth id="auth" user="{{user}}" app-name="comm">
+    </firebase-auth>
+    <firebase-messaging id="messaging" token="{{token}}" on-message="handleMessage" app-name="comm"></firebase-messaging>
+    <firebase-document id="document" path="/users/[[user.uid]]/token" data="[[token]]" app-name="comm"></firebase-document>
+    <firebase-document id="userStatus" path="/users/[[user.uid]]/status" data="{{status}}" app-name="comm"></firebase-document>
+
+    <div class="card">
+      <paper-toggle-button id="subscribe" on-tap="toggleSubscription" checked="[[status]]"></paper-toggle-button>
+    </div>
+
+  </template>
+
+  <script>
+    HTMLImports.whenReady(function () {
+        
+    });
+
+      Polymer({
+        is: 'my-subscription',
+
+        properties: {
+          status: {
+            type: Boolean,
+            notify: true,
+            value: false
+          }
+        },
+
+        observers: [
+          '_statusChanged(status)'
+        ],
+
+        ready: function () {
+
+        },
+
+        toggleSubscription: function () {
+          var th = this;
+
+          if (this.$.subscribe.checked) {
+            // console.log(this.$.messaging.getToken());
+            this.$.messaging.requestPermission().then(function () {
+              //this.$.messaging.refreshToken(); 
+              th.status = true;
+
+              th.$.userStatus.saveValue("/users/" + th.user.uid, "status").then(() => function () {
+                console.log('success');
+              });
+            }, function (err) {
+
+            });
+          } else {
+            this.status = false;
+            console.log(this.$.userStatus.path);
+            this.$.userStatus.saveValue("/users/" + this.user.uid, "status").then(() => function () {
+              console.log('success');
+            });
+          }
+        },
+
+        handleMessage: function () {
+          console.log('Message Received!', arguments);
+        },
+
+        _statusChanged: function (status) {
+          console.log(status);
+        }
+
+      });
+  </script>
+</dom-module>

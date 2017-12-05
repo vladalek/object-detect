@@ -1,0 +1,188 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>AT&T | GOT</title>
+    <meta charset="utf-8">
+    <meta name="generator" content="AT&T Fan Experience | Game of Thrones">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>AT&T | GOT</title>
+    <meta name="description" content="AT&T Fan Experience | Game of Thrones">
+
+    <link rel="icon" href="https://s3.amazonaws.com/got-microsite-assets/images/general/Globe+Only.png">
+
+    <!-- See https://goo.gl/OOhYW5 -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- See https://goo.gl/qRE0vM -->
+    <meta name="theme-color" content="#3f51b5">
+
+    <!-- Add to homescreen for Chrome on Android. Fallback for manifest.json -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="AT&T Fan Experience | Game of Thrones">
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="My App">
+
+    <base href="/">
+
+    <!-- Homescreen icons -->
+    <link rel="apple-touch-icon" href="/images/Logo v1.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/images/Logo v1.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/images/Logo v1.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/images/Logo v1.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/images/Logo v1.png">
+
+    <!-- Tile icon for Windows 8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="/images/Logo v1.png">
+    <meta name="msapplication-TileColor" content="#3f51b5">
+    <meta name="msapplication-tap-highlight" content="no">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <script src="https://www.google-analytics.com/analytics.js" async=""></script>
+
+
+    <script>
+      // Setup Polymer options
+      window.Polymer = {
+        dom: 'shadow',
+        lazyRegister: true,
+      };
+
+      // Load webcomponentsjs polyfill if browser does not support native
+      // Web Components
+      (function() {
+        'use strict';
+
+        var onload = function() {
+          // For native Imports, manually fire WebComponentsReady so user code
+          // can use the same code path for native and polyfill'd imports.
+          if (!window.HTMLImports) {
+            document.dispatchEvent(
+              new CustomEvent('WebComponentsReady', {bubbles: true})
+            );
+          }
+        };
+
+        var webComponentsSupported = (
+          'registerElement' in document
+          && 'import' in document.createElement('link')
+          && 'content' in document.createElement('template')
+        );
+
+        if (!webComponentsSupported) {
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = '/bower_components/webcomponentsjs/webcomponents-lite.js';
+          script.onload = onload;
+          document.head.appendChild(script);
+        } else {
+          onload();
+        }
+
+        // if (location.hostname === 'localhost') return;
+        console.log('location : ', location.hostname);
+
+        window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+
+        ga('create', 'UA-97063097-2', 'auto');
+
+        window.addEventListener('app-metadata', function(e) {
+          console.log('location : ', location.pathname);
+          ga('set', 'page', location.pathname);
+          ga('send', 'pageview');
+        });
+
+        window.addEventListener('error', function(e) {
+          ga('send', 'exception', {
+            'exDescription': e.message,
+            'exFatal': false
+          });
+        });
+
+        window.addEventListener('WebComponentsReady', function(e) {
+          console.log('performance : ', window.performance);
+          if (window.performance) {
+            ga('send', 'timing', 'timeOneSite', 'WebComponentsReady', Math.round(performance.now()));
+          }
+        });
+      })();
+
+      // Load pre-caching Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/service-worker.js');
+
+          navigator.serviceWorker.addEventListener('message', function(event){
+              console.log("Client 1 Received Message: " + event.data);
+              event.ports[0].postMessage("Client 1 Says 'Hello back!'");
+          });
+
+        });
+      }
+
+      function send_message_to_client(client, msg){
+        return new Promise(function(resolve, reject) {
+          var msg_chan = new MessageChannel();
+
+          msg_chan.port1.onmessage = function(event){
+              if(event.data.error){
+                  reject(event.data.error);
+              }else{
+                  resolve(event.data);
+              }
+          };
+
+          client.postMessage("SW Says: '"+msg+"'", [msg_chan.port2]);
+        });
+      }
+    </script>
+
+    <link rel="import" href="/src/mobile-app.html"><!-- 
+    <link rel="import" href="/bower_components/polymerfire/polymerfire.html"> -->
+
+    <!-- GeoFire -->
+    <script src="https://cdn.firebase.com/libs/geofire/4.1.2/geofire.min.js"></script>
+
+    <style>
+      @font-face {
+        font-family: attAlecFont;
+        src: url(/assets/fonts/ATTAleckCd_W_Rg.woff);
+      }
+
+      @font-face {
+        font-family: attAlecFontBld;
+        src: url(/assets/fonts/ATTAleckCd_W_Bd.woff);
+      }
+
+      body {
+        margin: 0;
+        font-family: attAlecFont;
+        line-height: 1.5;
+        min-height: 100vh;
+        background-color: #eeeeee;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <firebase-app id="app" name="comm"
+                  auth-domain="got-microsite.firebaseapp.com"
+                  database-url="https://got-microsite.firebaseio.com"
+                  api-key="AIzaSyAbqMf5vbEec3aQ3t9h7bndBEodAPq-fww"
+                  messaging-sender-id="276681652131">
+    </firebase-app> -->
+    <mobile-app></mobile-app>
+  </body>
+</html>

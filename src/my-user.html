@@ -1,0 +1,170 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+
+<link rel="import" href="my-login.html">
+<link rel="import" href="my-signup.html">
+
+<dom-module id="my-user">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+        line-height: 1.5;
+      }
+
+      .card {
+        margin: 0;
+        padding: 16px;
+      }
+
+      .event {
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+      }
+
+      .eventImage {
+        display: flex;
+        align-items: center;
+      }
+
+      .eventImage img {
+        width: 80%;
+      }
+
+      .notifications {
+        display: flex;
+        flex-flow: row;
+        justify-content: space-between;
+        margin: 5px auto;
+      }
+    </style>
+
+
+    <firebase-auth id="auth" user="{{user}}" app-name="comm">
+    </firebase-auth>
+    <firebase-messaging id="messaging" token="{{token}}" on-message="handleMessage" app-name="comm"></firebase-messaging>
+    <firebase-document 
+      id="document" 
+      path="[[user.uid]]/userInfo/token" 
+      data="[[token]]" 
+      app-name="comm">
+    </firebase-document>
+    <firebase-document 
+      id="userStatus" 
+      path="[[user.uid]]/userInfo/notificationEnabled" 
+      data="{{enableNotifications}}" 
+      app-name="comm">
+    </firebase-document>
+
+    <template is="dom-if" if="[[signedIn]]">
+      <div class="welcome">
+        <h1>Welcome <span>{{userData.firstName}} {{userData.lastName}}</span></h1>
+      </div>
+    </template>
+
+    <div class="card">
+      <template is="dom-if" if="[[!signedIn]]">
+        <my-login user="[[user]]"></my-login>
+        <my-signup user="[[user]]"></my-signup>
+      </template>
+
+      <template is="dom-if" if="[[signedIn]]">
+        <div class="event">
+          <a href="javascript:void(0)" on-tap="_logout">Logout</a>
+          <h3>August 14th</h3>
+          <h3>Meet some special person</h3>
+          <div class="eventImage">
+            <img src="/images/arthur_poster.jpg" alt="">
+          </div>
+          <div class="notifications">
+            <div class="">
+              <p>Would you like to receive notifications about upcoming events such as this one</p>
+            </div>
+            <paper-toggle-button id="subscribe" on-tap="toggleSubscription" checked="[[enableNotifications]]"></paper-toggle-button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-user',
+
+      properties: {
+        signedIn: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        user: {
+          type: Object,
+          value: function () {
+            return {};
+          }
+        },
+
+        userName: {
+          type:String,
+          notify: true,
+          value: 'Jimmy Smith'
+        },
+
+        enableNotifications: {
+          type: Boolean,
+          notify: true,
+          value: false
+        }
+      },
+
+      // Trigger logout custom event.
+      _logout: function () {
+
+        this.fire('logout');
+
+      }, 
+      toggleSubscription: function () {
+        var th = this;
+        console.log(this.token);
+
+        if (this.token == null || this.token == false) {
+          // console.log(this.$.messaging.getToken());
+          this.$.messaging.requestPermission().then(function () {
+            //this.$.messaging.refreshToken(); 
+            th.enableNotifications = true;
+
+            th.$.userStatus.saveValue(th.user.uid + "/userInfo", "enableNotifications").then(() => function () {
+              console.log('success');
+            });
+          }, function (err) {
+
+          });
+        } else {
+          this.enableNotifications = false;
+          this.$.userStatus.saveValue(this.user.uid + "/userInfo", "enableNotifications").then(() => function () {
+            console.log('success');
+          });
+        }
+      },
+      handleMessage: function () {
+        console.log('Message Received!', arguments);
+      }
+    });
+  </script>
+</dom-module>

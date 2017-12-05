@@ -1,0 +1,109 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="show-content-data.html">
+<link rel="import" href="show-character-data.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="show-cast">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+
+      p {
+        font-size: 12px;
+        color: #000000;
+        padding: 5px;
+      }
+      h4{
+        margin: 5px 0px;
+        padding: 5px;
+      }
+
+      .cast_members {
+        display: flex;
+        flex-direction: row;
+        overflow: auto;
+        overflow-y: hidden;
+      }
+
+      .cast_member img {
+        height: 150px;
+        width: auto;
+        padding: 5px;
+      }
+
+      .cast_member p {
+        padding: 0 5px;
+        margin-top: 0px;
+      }
+
+      cast_member h4{
+        margin-bottom: 2px;
+      }
+
+    </style>
+
+    <show-character-data
+      character-list="{{characterList}}">
+    </show-character-data>
+
+    <div class="cast_members">
+      <template id="cast" is="dom-repeat" items="{{characterList}}" as="character" index-as="i">
+        <div class="cast_member" id="castMember" on-tap="_castMemberPress">
+          <img src="{{character.listImg}}" alt="">
+          <h4>{{character.name}}</h4>
+          <p>{{character.actorName}}</p>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'show-cast',
+
+      properties: {
+        characterList: {
+          type: Array,
+          notify: true,
+          observer: '_charListChange'
+        }
+      },
+
+      _charListChange: function (l) {
+        console.log('___________char list');
+        console.log(l);
+      },
+
+      _castMemberPress: function (e) {
+        console.log('castMemberPress: ' +e.model.i);
+        document.querySelector('mobile-app').set('page', 'character');
+        document.querySelector('mobile-app').set('requestedCharacter', e.model.i);
+
+        ga('send', {
+          hitType: 'event',
+          eventCategory: 'Cast',
+          eventAction: 'Detail',
+          eventLabel: e.model.character.name,
+          eventValue: e.model.i
+        });
+      },
+
+      ready: function() {
+        // this.set('characterList', document.querySelector('show-character-data').characters);
+      }
+    });
+  </script>
+</dom-module>

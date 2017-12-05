@@ -1,0 +1,153 @@
+
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<!-- <link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html"> -->
+
+<dom-module id="custom-grid" element-value={{commits}}>
+  <template>
+    <style is="custom-style">
+      #grid[inverted] {
+        --vaadin-grid-body-cell: {
+          background-color: var(--paper-grey-100);
+        };
+        --vaadin-grid-body-row-selected-cell: {
+          background-color: var(--primary-background-color);
+        };
+      }
+    </style>
+    <firebase-auth id="auth" user="{{user}}" provider="email" on-error="_handleError" app-name="comm"></firebase-auth>
+    <firebase-query id="query" app-name="comm" path="/users" data="{{users}}"></firebase-query>
+    <iron-localstorage id="localstorage" name="push-users" value="[[pushUsers]]" autoSaveDisabled="true"></iron-localstorage>
+
+    <vaadin-grid id="grid" items="[[commits]]" inverted$="[[inverted]]" size="50">
+      <!-- <vaadin-grid-selection-column auto-select></vaadin-grid-selection-column> -->
+      <vaadin-grid-column flex-grow="0" width="40px">
+        <template class="header">
+          <paper-checkbox  on-tap="_invert" checked="[[_isChecked(inverted, indeterminate)]]" indeterminate="[[indeterminate]]"></paper-checkbox>
+        </template>
+        <template>
+          <paper-checkbox on-change="_selectItem" checked="[[_isSelected(inverted, selected)]]"></paper-checkbox>
+        </template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column flex="1" width="80px">
+        <template class="header">First Name</template>
+        <template>[[item.firstname]]</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column flex="1" width="80px">
+        <template class="header">Last Name</template>
+        <template>[[item.lastname]]</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column flex="1" width="160px">
+        <template class="header">Email</template>
+        <template>[[item.email]]</template>
+      </vaadin-grid-column>
+
+      <vaadin-grid-column flex="1" width="60px">
+        <template class="header">Status</template>
+        <template>[[item.status]]</template>
+      </vaadin-grid-column>
+    </vaadin-grid>
+  </template>
+
+  <script>
+    addEventListener('WebComponentsReady', function() {
+      Polymer({
+        is: 'custom-grid',
+
+        properties: {
+          commits: {
+            type: Array,
+            notify: true
+          },
+          inverted: {
+            type: Boolean,
+            value: false
+          },
+          indeterminate: {
+            type: Boolean,
+            value: false
+          },
+          pushUsers: {
+            type: Object,
+            notify: false
+          }
+        },
+
+        observers: ['_resetSelection(inverted)'],
+
+        _resetSelection: function(inverted) {
+          this.$.grid.selectedItems = [];
+          this.updateStyles();
+          this.indeterminate = false;
+        },
+
+        _invert: function(e) {
+          this.inverted = !this.inverted;
+
+          var items = this.$.commits;
+        },
+
+        // iOS needs indeterminated + checked at the same time
+        _isChecked: function(inverted, indeterminate) {
+          return indeterminate || inverted;
+        },
+
+        _selectItem: function(e) {
+          if (e.target.checked === this.inverted) {
+            this.$.grid.deselectItem(e.model.item);
+          } else {
+            this.$.grid.selectItem(e.model.item);
+          }
+          this.indeterminate = this.$.grid.selectedItems.length > 0;
+          
+          this.$.localstorage.save(this.$.grid.selectedItems);
+
+          sessionStorage.setItem("allowedUsers", JSON.stringify(this.$.grid.selectedItems));
+        },
+
+        _isSelected: function(inverted, selected) {
+          return inverted != selected;
+        },
+
+        ready: function () {
+          this.$.localstorage.save("push-users", []);
+          this.userPath = "/users";
+          this.size = 100;
+
+          this.$.auth.signInWithEmailAndPassword("speedweb208@gmail.com", "password").then((user) => {
+
+            var commits = [];
+            setTimeout(function (data, obj) {
+
+              for (i in data) {
+                var commit = {};
+                if (data[i].status == false)
+                  continue;
+                
+                commit.firstname = data[i].info.firstName;
+                commit.lastname = data[i].info.lastName;
+                commit.email = data[i].info.email;
+                commit.checkedStatus = false;
+                commit.token = data[i].info.token;
+
+                if (data[i].info.notificationEnabled == false)
+                  commit.status = "Block";
+                else
+                  commit.status = "Allow";
+
+                commits.push(commit);
+              }
+
+              obj.commits = commits;
+
+            }, 800, this.$.query.data, this);
+
+          });
+        }
+      });
+    });
+  </script>
+</dom-module>

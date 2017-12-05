@@ -1,0 +1,69 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="shared-styles.html">
+
+<link rel="import" href="../bower_components/google-map/google-map.html">
+
+<dom-module id="exp-title">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+
+      google-map {
+        height: 200px;
+      }
+      a{
+        text-decoration: none;
+        color: #000000;
+      }
+    </style>
+
+    
+    <h2>AT&T Michigan Ave</h2>
+    <h3>Located at the corner of N. Michigan Ave. & Ontario St.</h3>
+    
+    <p>
+      <a 
+        href="https://www.google.com/maps/place/AT%26T/@41.8940302,-87.6262746,17z/data=!4m21!1m15!4m14!1m6!1m2!1s0x880e2cab525c5419:0x7d74d7a6516c0132!2sWarwick+Allerton+-+Chicago,+North+Michigan+Avenue,+Chicago,+IL!2m2!1d-87.623672!2d41.8951737!1m6!1m2!1s0x0:0xa230f0e78995caf9!2sAT%26T!2m2!1d-87.6244999!2d41.893124!3m4!1s0x880e2cac898ceb5f:0xa230f0e78995caf9!8m2!3d41.893124!4d-87.6244999"
+        target="_blank"
+      >600 N. Michigan Ave. Chicago, IL 60661
+      </a>
+    </p>
+    <google-map
+      api-key="AIzaSyBcRJlTswdT9leysmwpQBDsPgA4nffbeOY"
+      latitude="41.893264"
+      longitude="-87.624540"
+      zoom="14"
+      fit-to-markers
+      disable-street-view-control
+      disable-map-type-control>
+        <google-map-marker
+          latitude="41.893264"
+          longitude="-87.624540"
+          title="AT&T - 600 N. Michigan Ave">
+        </google-map-marker>
+      </google-map>
+    
+  </template>
+
+  <script>
+    Polymer({
+      is: 'exp-title',
+
+      properties: {
+      }
+    });
+  </script>
+</dom-module>

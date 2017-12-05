@@ -1,0 +1,216 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-select">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+
+      #card_location {
+        display: none;
+      }
+    </style>
+
+    <div class="card" id="card_location">
+      <h1>Please Select Your Location</h1>
+      <paper-button raised on-tap="_setSiteMA">Michigan Ave. Chicago</paper-button>
+      <paper-button raised on-tap="_setSiteSF">1 Powell San Francisco</paper-button>
+      <paper-button raised on-tap="_setSiteBOS">Store in Boston</paper-button>
+    </div>
+    <div id="out"></div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-select',
+
+      properties: {
+        keysLocations: {
+          type: Array,
+          notify: true,
+          value: function() {
+            return [
+              [ 'att_store_ma',
+                [41.893128, -87.6266886]],
+              [ 'att_store_sf',
+                [37.7834368, -122.4094414]],
+              [ 'att_store_bos',
+                [42.3498419, -71.0794695]]
+            ];
+          }
+        },
+
+        selectedLocation: {
+          type: Number,
+          notify: true
+        },
+
+        locationActive: {
+          type: Boolean,
+          notify: true
+        }
+      },
+
+      _setSiteMA: function() {
+        //document.querySelector('my-experience').set('selectedLocation', 0);
+        var latitude = 41.8930829;
+        var longitude = -87.6245945;
+        this.selectedLocation = 0;
+        this.locationActive = true;
+        this._hideCardLocation();
+        //this._createGeoFire('user_new', latitude, longitude);
+        //this._showStaticMap(latitude, longitude);
+        this._createLocalGeo(latitude, longitude);
+      },
+
+      _setSiteSF: function() {
+        //document.querySelector('my-experience').set('selectedLocation', 1);
+        var latitude = 37.7846573;
+        var longitude = -122.4078576;
+        this.selectedLocation = 1;
+        this.locationActive = true;
+        this._hideCardLocation();
+        //this._createGeoFire('user_new', latitude, longitude);
+        //this._showStaticMap(latitude, longitude);
+        this._createLocalGeo(latitude, longitude);
+      },
+
+      _setSiteBOS: function() {
+        //document.querySelector('my-experience').set('selectedLocation', 2);
+        var latitude = 42.3498419;
+        var longitude = -71.0794695;
+        this.selectedLocation = 2;
+        this.locationActive = true;
+        this._hideCardLocation();
+        //this._createGeoFire('user_new', latitude, longitude);
+        //this._showStaticMap(latitude, longitude);
+        this._createLocalGeo(latitude, longitude);
+      },
+
+      _hideCardLocation: function () {
+        var card_location = this.$.card_location;
+        card_location.style.display = "none";
+      },
+
+      _createGeoFire: function (user_key, latitude, longitude) {
+        geoFire.set(user_key, [latitude, longitude]).then(function() {
+          console.log("Provided key has been added to GeoFire: - - " + user_key);
+        }, function(error) {
+          console.log("Error: " + error);
+        });
+      },
+
+      _createLocalGeo: function (latitude, longitude) {
+        var data_text = '{"latitude":'+latitude+', "longitude":'+longitude+'}';
+        localStorage.setItem('GOTMicroSiteGeoLocation', data_text);
+        if (localStorage.getItem('GOTMicroSiteGeoLocation')) {
+          console.log(localStorage.getItem('GOTMicroSiteGeoLocation'));
+        }
+      },
+
+      _showStaticMap: function (latitude, longitude) {
+        var img = new Image();
+        img.src = "https://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&radius=5000&zoom=17&size=300x300&scale=1&sensor=false&markers=color:red%7Clabel:S%7C" + latitude + "," + longitude;
+
+        this.$.out.innerHTML = '';
+        this.$.out.appendChild(img);
+      },
+
+      _geoFindMe: function () {
+        if (!navigator.geolocation) { return; }
+
+        var output = this.$.out;
+        var card_location = this.$.card_location;
+
+        var showNudgeCard = function() {
+          card_location.style.display = "block";
+        }
+
+        var hideNudgeCard = function() {
+          card_location.style.display = "none";
+        }
+
+        var nudgeTimeoutId = setTimeout(showNudgeCard, 5000);
+
+        var geoSuccess = function(position) {
+          hideNudgeCard();
+          clearTimeout(nudgeTimeoutId);
+          var latitude = position.coords.latitude;
+          var longitude = position.coords.longitude;
+          this.selectedLocation = 4;
+          this.locationActive = true;
+          //this._createGeoFire('user_new', latitude, longitude);
+          //this._showStaticMap(latitude, longitude);
+          this._createLocalGeo(latitude, longitude);
+        }.bind(this);
+
+        var geoError = function(error) {
+          switch(error.code) {
+            /*case error.PERMISSION_DENIED:
+              console.log("User denied the request for Geolocation.");
+              break;*/
+            case error.POSITION_UNAVAILABLE:
+              console.log("Location information is unavailable.");
+              nudgeTimeoutId = setTimeout(showNudgeCard, 5000);
+              break;
+            case error.TIMEOUT:
+              console.log("The request to get user location timed out.");
+              nudgeTimeoutId = setTimeout(showNudgeCard, 5000);
+              break;
+            case error.UNKNOWN_ERROR:
+              console.log("An unknown error occurred.");
+              nudgeTimeoutId = setTimeout(showNudgeCard, 5000);
+              break;
+          }
+        }
+
+        navigator.geolocation.getCurrentPosition(geoSuccess, geoError);
+      },
+
+      _crearGeoFence: function (data) {
+        geoFire.get(data['key']).then(function(location) {
+          if (location === null) {
+            geoFire.set(data['key'], [data['latitude'], data['longitude']]).then(function() {
+              console.log("Provided key has been added to GeoFire: - - " + data['key']);
+            }, function(error) {
+              console.log("Error: " + error);
+            });
+          } else {
+            console.log('me fui');
+          }
+        }, function(error) {
+          console.log("Error: " + error);
+        });
+      },
+
+      ready: function () {
+        // Create a Firebase reference where GeoFire will store its information
+        var firebaseRef = firebase.database().ref();
+        // Create a GeoFire index
+        geoFire = new GeoFire(firebaseRef);
+
+        if (localStorage.getItem('GOTMicroSiteGeoLocation')) {
+          //console.log('GeoLocation already selected.!');
+          this.selectedLocation = 4;
+          this.locationActive = true;
+        } else {
+          //console.log('Search GeoLocation.!');
+          this._geoFindMe();
+        }
+      }
+    });
+  </script>
+</dom-module>

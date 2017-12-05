@@ -1,0 +1,228 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="show-cast.html">
+<link rel="import" href="show-trailer-video.html">
+<link rel="import" href="show-behind-the-scenes-video.html">
+<link rel="import" href="show-character-data.html">
+<link rel="import" href="my-select.html">
+<link rel="import" href="my-signup.html">
+<link rel="import" href="social-share.html">
+<link rel="import" href="exp-title.html">
+<link rel="import" href="event-notifications-enable.html">
+
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-experience">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: flex;
+        flex-flow: column;
+        line-height: 1.0;
+        display: block;
+      }
+
+      .experience_img {
+        text-align: center;
+      }
+
+      .experience_img img {
+        max-width: 80%;
+        text-align: center;
+      }
+
+      .event_att img {
+        max-width: 80%;
+      }
+
+      .quiz img {
+        max-width: 80%;
+      }
+
+      .quiz paper-button {
+        background: #EA7400;
+        color: #FFFFFF;
+        padding: 20px 80px;
+        margin: 10px auto;
+      }
+
+      .event_got img {
+        max-width: 80%;
+      }
+
+      .titleAd img {
+        width: 100%;
+      }
+
+      .titleMovie {
+        /*max-height: 20%;*/
+        width: auto;
+      }
+
+      .titleMovie img {
+        width: 100%;
+      }
+
+      a,p {
+        text-decoration: none;
+        color: #000000;
+      }
+
+      .title_logo{
+        width: 80%;
+      }
+    </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+        route="[[route]]"
+        pattern="/:page/:id"
+        data="{{routeData}}"></app-route>
+
+    <template is="dom-if" if="[[!locationActive]]">
+      <my-select selected-location="{{selectedLocation}}" location-active="{{locationActive}}"></my-select>
+    </template>
+
+    <div class="experience_title card">
+      <div class="experience_img">
+        <img src="https://s3.amazonaws.com/got-microsite-assets/images/general/GT7_Poster_RGB_notunein.jpg" alt="">
+      </div>
+      <img class="title_logo" src="https://s3.amazonaws.com/got-microsite-assets/images/general/GOT.PNG" alt="">
+
+      <h2 class="center_text">@ AT&T</h2>
+      <h4 class="center_text">This is your home for the Game of Thrones experience. Scroll down to see what AT&T has in store for you.</h4>
+    </div>
+
+    <template is="dom-if" if="[[!signedIn]]">
+      <div class="signIn card">
+        <h2 class="center_text">Sign up to win VIP Access at the next Game of Thrones event</h2>
+        <my-signup id="signupPage"></my-signup>
+        <!-- <p class="center_text"><a href="/user">Log-In</a></p> -->
+      </div>
+    </template>
+
+    <div class="event_got card">
+      <h2 class="center_text">Rally the Realm</h2>
+      <h3 class="center_text">Join us at AT&T for your chance to experience Game of Thrones. Come face-to-face with the Night King, sit on top of the Iron Throne and much more!</h3>
+      <h3>August 11th</h3>
+      <h4>The event is 5:30 - 9:00 so get there early!</h4>
+      <img src="https://s3.amazonaws.com/got-microsite-assets/images/general/Iron+Throne+-+MA.jpg" alt="">
+      <template is="dom-if" if="[[!notificatonsEnabled]]">
+         <event-notifications-enable></event-notifications-enable> 
+      </template>
+      <exp-title></exp-title>
+    </div>
+
+    <div class="quiz card">
+      <h2>Test your Game of Thrones knowledge</h2>
+      <img src="https://s3.amazonaws.com/got-microsite-assets/images/general/Greyjoy.jpg" alt="">
+      <h4 class="center_text">In this experience you will be asked to identify iconic items from Game of Thrones by using your camera as a lens into the Realm!</h4>
+      <paper-button raised>Start Quiz</paper-button>
+    </div>
+
+    <div class="trailer_select card">
+      <h2 class="center_text">Game of Thrones Season 7 Official Trailers</h2>
+      <show-trailer-video></show-trailer-video>
+    </div>
+
+    <div class="behind_scene_select card">
+      <h2 class="center_text">A Deeper Look into Season 7</h2>
+      <show-behind-the-scenes-video></show-behind-the-scenes-video>
+    </div>
+
+    <div class="cast_select card">
+      <h2 class="center_text">Dwelers of the 7 Kingdoms</h2>
+      <show-cast></show-cast>
+    </div>
+
+    <div class="event_att card">
+      <h2 class="center_text">August 21st</h2>
+      <h2 class="center_text">MLS All-Star Chalk Talk</h2>
+      <img src="https://s3.amazonaws.com/got-microsite-assets/images/att_events/ATT_event1_header.jpg" alt="">
+      <h4 class="center_text">
+        Chicago! Get pumped for the Major League Soccer All-Star game by kicking it with Major League Soccer (MLS)’s finest at the AT&T Flagship Store on Tuesday night. The MLS All-Star Chalk Talk will feature MLS stars from past and present, including Chicago Fire alum Calen Carr, Brian Ching, Jimmy Conrad, and MLS star Jozy Altidore.
+        Some random fans will be selected to walk away with MLS game tickets with no purchase necessary. Hear what the guys have to say on all things MLS All-Star, and afterwards you’ll possibly have the chance to take a photo with the players and maybe even get an autograph from them.
+        If you are able to make it out to the event you may just walk out with some awesome All-Star Swag!
+        Hope to see you here!
+      </h4>
+      <social-share></social-share>
+      <template is="dom-if" if="[[!notificatonsEnabled]]">
+         <event-notifications-enable></event-notifications-enable> 
+      </template>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-experience',
+
+      properties: {
+        selectedLocation: {
+          type: Number,
+          notify: true,
+          //observer: '_locationSelected'
+        },
+
+        locationActive: {
+          type: Boolean,
+          notify: true,
+          value: function () {
+            return false;
+          }
+        },
+
+        character: {
+          type: Object,
+          notify: true,
+          value: {},
+          observer: '_characterChangedExp'
+        },
+
+        requestedCharacter: {
+          type: Number,
+          notify: true,
+          value: 0
+        },
+
+        notificatonsEnabled: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        signedIn: {
+          type: Boolean,
+          notify: true,
+          value: false
+        }
+      },
+
+      _characterChangedExp: function (c) {
+        console.log('CHAR');
+        console.log(c);
+      },
+
+      _locationSelected: function (l) {
+        if (l) {
+          this.set('locationActive', true);
+        }
+      },
+
+      _launchExperience: function () {
+        document.querySelector('mobile-app').set('requestExperience', 'start');
+      }
+    });
+  </script>
+</dom-module>

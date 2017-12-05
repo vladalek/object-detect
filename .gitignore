@@ -1,0 +1,9 @@
+bower_components/
+build/
+node_modules/
+images/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

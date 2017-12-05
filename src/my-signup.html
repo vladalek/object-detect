@@ -1,0 +1,196 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-messaging.html">
+<link rel="import" href="../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../bower_components/paper-password-input/paper-password-input.html">
+<link rel="import" href="../bower_components/paper-password-input/match-passwords-validator.html">
+<link rel="import" href="../bower_components/paper-password-input/min-length-validator.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-signup">
+  <template>
+    <style include="iron-flex iron-flex-alignment iron-positioning shared-styles">
+      :host {
+        display: block;
+        justify-content: center;
+        padding: 10px 0;
+      }
+
+      h1 {
+        margin-top: 4px;
+        margin-bottom: 12px;
+      }
+
+      .wrapper-btns {
+        margin-top: 15px;
+      }
+
+      .wrapper-btns .form-btn {
+        padding: 20px 80px;
+        margin: 0 auto;
+      }
+
+      .loader-wapper {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      paper-button {
+        background: #EA7400;
+        color: #FFFFFF;
+      }
+
+      @media screen and (min-width: 680px) {
+        :host {
+          width: 50%;
+          margin: 0 auto;
+        }
+      }
+    </style>
+
+    <!-- Get global app config -->
+    <iron-meta-query 
+      key="appConfig" 
+      value="{{appConfig}}">
+    </iron-meta-query>
+
+    <!-- Firebase setup elements
+        App name: comm
+    -->
+
+    <firebase-auth id="firebaseAuth" app-name="comm" provider="password" signed-in="{{signedIn}}" user="{{_user}}">
+    </firebase-auth>
+    <firebase-document app-name="comm" id="firebaseDoc">
+    </firebase-document>
+
+    <!-- Signup form -->
+    <div>
+      <h3>Sign Up</h3>
+
+      <template is="dom-if" if="[[_errorMessage]]">
+        <p class="alert-error"><strong>Error:</strong> {{_errorMessage}}</p>
+      </template>
+
+      <form is="iron-form" id="form">
+        <paper-input label="First name*" required auto-validate error-message="Required!" value="{{formData.firstname}}"></paper-input>
+        <paper-input label="Last name*" required auto-validate error-message="Required!" value="{{formData.lastname}}"></paper-input>
+        <paper-input pattern='^[a-z0-9_\-\.]{2,}@[a-z0-9_\-\.]{2,}\.[a-z]{2,}$' label="Email*" auto-validate error-message="invalid email"
+          required value="{{formData.email}}"></paper-input>
+        <min-length-validator id="min-length-validator" min-length="6"></min-length-validator>
+        <match-passwords-validator id="match-passwords-validator" password="[[formData.password]]"></match-passwords-validator>
+        <paper-password-input required label="Password*" auto-validate validator="min-length-validator" error-message="Password should be at least 6 characters"
+          value="{{formData.password}}"></paper-password-input>
+        <paper-password-input required label="Re-type Password*" value="{{formData.repassword}}" auto-validate validator="match-passwords-validator"
+          error-message="Passwords need to match">
+        </paper-password-input>
+        <div class="wrapper-btns layout horizontal center">
+          <paper-button type="submit" raised class="primary form-btn" on-tap="doSignup" disabled="[[loading]]">Sign Up</paper-button>
+        </div>
+      </form>
+
+      <div class="fit layout horizontal center-center loader-wapper" hidden$="[[!loading]]">
+        <paper-spinner-lite active></paper-spinner-lite>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: "my-signup",
+
+      properties: {
+        formData: {
+          type: Object,
+          value: function () {
+            return {};
+          }
+        },
+
+        signedIn: {
+          type: Boolean,
+          value: false
+        },
+
+        loading: {
+          type: Boolean,
+          value: false
+        },
+
+        user: {
+          type: Object,
+          value: function () {
+            return {};
+          }
+        },
+        firebaseApp: {
+          type: Object,
+          value: function () {
+            return {};
+          }
+        },
+
+        _errorMessage: {
+          type: String,
+          value: ""
+        }
+      },
+
+      /**
+          Create new user if form valid
+          If success
+            - Set user data in db with received user ID from firebase
+            - Set first visit with start time
+            - reset the form
+          IF error > show error message
+      */
+      doSignup: function () {
+        var self = this;
+        self.set('_errorMessage', '');
+
+        if (self.$.form.validate()) {
+          self.set('loading', true);
+          // var credential = firebase.auth.EmailAuthProvider.credential(self.formData.email, self.formData.password);
+          // console.log(credential);
+
+          // self.$.firebaseAuth.auth.currentUser.linkWithCredential(credential)
+          self.$.firebaseAuth.createUserWithEmailAndPassword(self.formData.email, self.formData.password)
+            .then(function (user) {
+              var _formData = {
+                'currentCustomer': false, // Hard coded change as per your need
+                'email': self.formData.email,
+                'firstName': self.formData.firstname,
+                'lastName': self.formData.lastname,
+                'notificationEnabled': false // Hard coded change as per your need
+              }
+              self.$.firebaseDoc.setStoredValue(user.uid + '/userInfo', _formData);
+              self.$.firebaseDoc.setStoredValue(user.uid + '/usageData/web/visit1/start', { ".sv": "timestamp" });
+
+              localStorage.setItem('visit', '1');
+              self.set('loading', false);
+              self.fire('user-created');
+              self.$.form.reset();
+              
+              ga('set', 'userId', user.email);
+            }).catch(function (error) {
+              // Handle Errors here.
+              self.set('loading', false);
+              var errorCode = error.code;
+              // console.log(errorCode);
+              self.set('_errorMessage', error.message);
+            });
+        }
+      }
+    });
+  </script>
+</dom-module>
+

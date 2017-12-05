@@ -1,0 +1,55 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="shared-styles.html">
+
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+
+
+<dom-module id="event-notifications-enable">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: flex;
+        padding: 10px;
+      }
+
+      .toggle_button{
+        margin: auto;
+        
+      }
+
+      paper-toggle-button.blue{
+        /* --paper-toggle-button-checked-ink-color: #009FDB; */
+        --paper-toggle-button-checked-bar-color:  #EA7400;
+        --paper-toggle-button-checked-button-color:  #EA7400;
+      }
+    </style>
+
+    <div>
+      <h4>Would you like to receive notifications about events like this at AT&T?</h4>
+    </div>
+    <div class="toggle_button">
+      <paper-toggle-button class="blue"></paper-toggle-button>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'event-notifications-enable',
+
+      properties: {
+
+      },
+    });
+  </script>
+</dom-module>
